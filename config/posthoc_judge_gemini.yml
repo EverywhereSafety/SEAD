@@ -1,0 +1,10 @@
+schema_version: posthoc-llm-judge-v1
+judge:
+  provider: gemini
+  model: gemini/gemini-3-flash-preview
+  api_key_env: GEMINI_API_KEY
+  temperature: 0
+  max_output_tokens: 2048
+  num_retries: 2
+  request_timeout_seconds: 120
+  max_concurrency: 8

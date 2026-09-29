@@ -1,0 +1,3 @@
+schema_version: mtar-cka-environment-v1
+runtime_profile: ptrace-sshd
+evaluator_python_requirements: []

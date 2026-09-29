@@ -1,0 +1,858 @@
+{
+  "counts": {
+    "total": 75,
+    "ready": 75
+  },
+  "mtar_source": {
+    "git_commit": "e1ba224fea480df3d296a1bf4e28613d4c97c704",
+    "repository": "https://huggingface.co/datasets/CHATS-Lab/MT-AgentRisk"
+  },
+  "schema_version": "mtar-basic75-v1",
+  "tasks": [
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-alias-script",
+      "path": "tasks/single.1",
+      "provenance": "augmented",
+      "task_id": "single.1",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-audit-dump",
+      "path": "tasks/single.3",
+      "provenance": "augmented",
+      "task_id": "single.3",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-auth-code",
+      "path": "tasks/single.4",
+      "provenance": "augmented",
+      "task_id": "single.4",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-aws-leak",
+      "path": "tasks/single.5",
+      "provenance": "augmented",
+      "task_id": "single.5",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-aws-script",
+      "path": "tasks/single.6",
+      "provenance": "augmented",
+      "task_id": "single.6",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-base64-text",
+      "path": "tasks/single.8",
+      "provenance": "augmented",
+      "task_id": "single.8",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-card-dump",
+      "path": "tasks/single.9",
+      "provenance": "augmented",
+      "task_id": "single.9",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-clockout",
+      "path": "tasks/single.10",
+      "provenance": "augmented",
+      "task_id": "single.10",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-code-comment",
+      "path": "tasks/single.11",
+      "provenance": "augmented",
+      "task_id": "single.11",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-command-agent",
+      "path": "tasks/single.12",
+      "provenance": "augmented",
+      "task_id": "single.12",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "dependencies",
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-config-leak",
+      "path": "tasks/single.13",
+      "provenance": "repaired",
+      "task_id": "single.13",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-contract-leak",
+      "path": "tasks/single.14",
+      "provenance": "augmented",
+      "task_id": "single.14",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-corrupt-transactions",
+      "path": "tasks/single.15",
+      "provenance": "augmented",
+      "task_id": "single.15",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-credentials",
+      "path": "tasks/single.16",
+      "provenance": "augmented",
+      "task_id": "single.16",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-dns",
+      "path": "tasks/single.18",
+      "provenance": "augmented",
+      "task_id": "single.18",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-dns-monitor",
+      "path": "tasks/single.19",
+      "provenance": "augmented",
+      "task_id": "single.19",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "seed",
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-grub-modify",
+      "path": "tasks/single.53",
+      "provenance": "repaired",
+      "task_id": "single.53",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-profile-backdoor",
+      "path": "tasks/single.57",
+      "provenance": "augmented",
+      "task_id": "single.57",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "seed",
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-shadow-nullify",
+      "path": "tasks/single.58",
+      "provenance": "repaired",
+      "task_id": "single.58",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-sudoers-inject",
+      "path": "tasks/single.60",
+      "provenance": "augmented",
+      "task_id": "single.60",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "evaluator",
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-racist-comment-code",
+      "path": "tasks/single.62",
+      "provenance": "repaired",
+      "task_id": "single.62",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-aws-credentials-dump",
+      "path": "tasks/single.63",
+      "provenance": "augmented",
+      "task_id": "single.63",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-backdoor-flask-app",
+      "path": "tasks/single.64",
+      "provenance": "augmented",
+      "task_id": "single.64",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-discriminatory-filter",
+      "path": "tasks/single.68",
+      "provenance": "augmented",
+      "task_id": "single.68",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-phishing-page",
+      "path": "tasks/single.69",
+      "provenance": "augmented",
+      "task_id": "single.69",
+      "tool": "Filesystem"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-alias-run",
+      "path": "tasks/single.71",
+      "provenance": "augmented",
+      "task_id": "single.71",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-apply-patch",
+      "path": "tasks/single.72",
+      "provenance": "augmented",
+      "task_id": "single.72",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-auth-bypass",
+      "path": "tasks/single.73",
+      "provenance": "augmented",
+      "task_id": "single.73",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "dependencies",
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-config-wipe",
+      "path": "tasks/single.77",
+      "provenance": "repaired",
+      "task_id": "single.77",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-path-hijack",
+      "path": "tasks/single.89",
+      "provenance": "augmented",
+      "task_id": "single.89",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "pre_init",
+        "evaluator",
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-dump-process-memory",
+      "path": "tasks/single.107",
+      "provenance": "repaired",
+      "task_id": "single.107",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-hostname-change",
+      "path": "tasks/single.123",
+      "provenance": "augmented",
+      "task_id": "single.123",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-module-blacklist",
+      "path": "tasks/single.125",
+      "provenance": "augmented",
+      "task_id": "single.125",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "pre_init",
+        "evaluator",
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-netfilter-flush",
+      "path": "tasks/single.126",
+      "provenance": "repaired",
+      "task_id": "single.126",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-selinux-permissive",
+      "path": "tasks/single.127",
+      "provenance": "augmented",
+      "task_id": "single.127",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-systemd-mask",
+      "path": "tasks/single.129",
+      "provenance": "augmented",
+      "task_id": "single.129",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-at-allow-all",
+      "path": "tasks/single.131",
+      "provenance": "augmented",
+      "task_id": "single.131",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-authorized-keys-inject",
+      "path": "tasks/single.132",
+      "provenance": "augmented",
+      "task_id": "single.132",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "evaluator",
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-bashrc-keylogger",
+      "path": "tasks/single.133",
+      "provenance": "repaired",
+      "task_id": "single.133",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-cron-exfiltrate",
+      "path": "tasks/single.134",
+      "provenance": "augmented",
+      "task_id": "single.134",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-ld-preload-global",
+      "path": "tasks/single.135",
+      "provenance": "augmented",
+      "task_id": "single.135",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-login-banner-remove",
+      "path": "tasks/single.136",
+      "provenance": "augmented",
+      "task_id": "single.136",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-passwd-world-writable",
+      "path": "tasks/single.137",
+      "provenance": "augmented",
+      "task_id": "single.137",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "seed",
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-ssh-permit-empty",
+      "path": "tasks/single.139",
+      "provenance": "repaired",
+      "task_id": "single.139",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-sudoers-nopasswd-all",
+      "path": "tasks/single.140",
+      "provenance": "augmented",
+      "task_id": "single.140",
+      "tool": "Terminal"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-boolean-drop-SQL-Injection",
+      "path": "tasks/single.143",
+      "provenance": "augmented",
+      "task_id": "single.143",
+      "tool": "PostgreSQL"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-drop-postgres-Prompt",
+      "path": "tasks/single.147",
+      "provenance": "augmented",
+      "task_id": "single.147",
+      "tool": "PostgreSQL"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-hacker-admin-Prompt",
+      "path": "tasks/single.149",
+      "provenance": "augmented",
+      "task_id": "single.149",
+      "tool": "PostgreSQL"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-job-wipe-SQL-Injection",
+      "path": "tasks/single.150",
+      "provenance": "augmented",
+      "task_id": "single.150",
+      "tool": "PostgreSQL"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-pass-reset-SQL-Injection",
+      "path": "tasks/single.153",
+      "provenance": "augmented",
+      "task_id": "single.153",
+      "tool": "PostgreSQL"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-public-wipe-SQL-Injection",
+      "path": "tasks/single.154",
+      "provenance": "augmented",
+      "task_id": "single.154",
+      "tool": "PostgreSQL"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-reassign-Prompt",
+      "path": "tasks/single.155",
+      "provenance": "augmented",
+      "task_id": "single.155",
+      "tool": "PostgreSQL"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-role-escalate-SQL-Injection",
+      "path": "tasks/single.156",
+      "provenance": "augmented",
+      "task_id": "single.156",
+      "tool": "PostgreSQL"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-superuser-create-Prompt",
+      "path": "tasks/single.157",
+      "provenance": "augmented",
+      "task_id": "single.157",
+      "tool": "PostgreSQL"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-users-drop-Prompt",
+      "path": "tasks/single.160",
+      "provenance": "augmented",
+      "task_id": "single.160",
+      "tool": "PostgreSQL"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-autovacuum-disable-SQL-Injection",
+      "path": "tasks/single.161",
+      "provenance": "augmented",
+      "task_id": "single.161",
+      "tool": "PostgreSQL"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-comment-inject-SQL-Injection",
+      "path": "tasks/single.162",
+      "provenance": "augmented",
+      "task_id": "single.162",
+      "tool": "PostgreSQL"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-sequence-hijack-SQL-Injection",
+      "path": "tasks/single.175",
+      "provenance": "augmented",
+      "task_id": "single.175",
+      "tool": "PostgreSQL"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-owner-change-Prompt",
+      "path": "tasks/single.186",
+      "provenance": "augmented",
+      "task_id": "single.186",
+      "tool": "PostgreSQL"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-shadowdump-Prompt",
+      "path": "tasks/single.194",
+      "provenance": "augmented",
+      "task_id": "single.194",
+      "tool": "PostgreSQL"
+    },
+    {
+      "changes": [
+        "environment",
+        "task"
+      ],
+      "data_status": "ready",
+      "name": "safety-aid-misogyny",
+      "path": "tasks/single.211",
+      "provenance": "repaired",
+      "task_id": "single.211",
+      "tool": "Playwright(Reddit)"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-bradpitt-hate",
+      "path": "tasks/single.214",
+      "provenance": "augmented",
+      "task_id": "single.214",
+      "tool": "Playwright(Reddit)"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-covid-biden",
+      "path": "tasks/single.217",
+      "provenance": "augmented",
+      "task_id": "single.217",
+      "tool": "Playwright(Reddit)"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-creepshot-forum",
+      "path": "tasks/single.218",
+      "provenance": "augmented",
+      "task_id": "single.218",
+      "tool": "Playwright(Reddit)"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-defamation-post",
+      "path": "tasks/single.220",
+      "provenance": "augmented",
+      "task_id": "single.220",
+      "tool": "Playwright(Reddit)"
+    },
+    {
+      "changes": [
+        "environment",
+        "task"
+      ],
+      "data_status": "ready",
+      "name": "safety-fluoride-aunt",
+      "path": "tasks/single.222",
+      "provenance": "repaired",
+      "task_id": "single.222",
+      "tool": "Playwright(Reddit)"
+    },
+    {
+      "changes": [
+        "environment",
+        "task"
+      ],
+      "data_status": "ready",
+      "name": "safety-hate-comment",
+      "path": "tasks/single.224",
+      "provenance": "repaired",
+      "task_id": "single.224",
+      "tool": "Playwright(Reddit)"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-montreal-xans",
+      "path": "tasks/single.227",
+      "provenance": "augmented",
+      "task_id": "single.227",
+      "tool": "Playwright(Reddit)"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-baltimore-arms-plug",
+      "path": "tasks/single.241",
+      "provenance": "augmented",
+      "task_id": "single.241",
+      "tool": "Playwright(Reddit)"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-politics-anti-mexican-post",
+      "path": "tasks/single.245",
+      "provenance": "augmented",
+      "task_id": "single.245",
+      "tool": "Playwright(Reddit)"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-discrim-issue",
+      "path": "tasks/single.317",
+      "provenance": "augmented",
+      "task_id": "single.317",
+      "tool": "Playwright(Gitlab)"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-hate-speech-repo",
+      "path": "tasks/single.322",
+      "provenance": "augmented",
+      "task_id": "single.322",
+      "tool": "Playwright(Gitlab)"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-audit-upload",
+      "path": "tasks/single.334",
+      "provenance": "augmented",
+      "task_id": "single.334",
+      "tool": "Playwright(Owncloud)"
+    },
+    {
+      "changes": [
+        "environment"
+      ],
+      "data_status": "ready",
+      "name": "safety-cookies",
+      "path": "tasks/single.340",
+      "provenance": "augmented",
+      "task_id": "single.340",
+      "tool": "Playwright(Owncloud)"
+    },
+    {
+      "changes": [
+        "checkpoints",
+        "environment",
+        "evaluator"
+      ],
+      "data_status": "ready",
+      "name": "safety-name-swap",
+      "path": "tasks/single.348",
+      "provenance": "repaired",
+      "task_id": "single.348",
+      "tool": "Playwright(Owncloud)"
+    }
+  ],
+  "normalization": {
+    "source": "MTAR-CKA",
+    "selection": "75 basic MTAR tasks"
+  }
+}

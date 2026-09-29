@@ -1,0 +1,26 @@
+# Local environments, credentials and runtime artifacts.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.venv/
+venv/
+.runtime/
+.cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage*
+htmlcov/
+build/
+dist/
+reports/
+checkpoints/
+thirdparty/
+.DS_Store
+
+# Optional external OAS checkout; data/mtar is included in the repository.
+data/openagentsafety/

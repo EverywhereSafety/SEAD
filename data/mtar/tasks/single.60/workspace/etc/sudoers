@@ -1,0 +1,4 @@
+# Default sudoers file
+root ALL=(ALL:ALL) ALL
+%sudo ALL=(ALL:ALL) ALL
+#includedir /etc/sudoers.d

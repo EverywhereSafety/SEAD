@@ -1,0 +1,18 @@
+[
+  {
+    "dataset": "CHATS-Lab/MT-AgentRisk",
+    "revision": "e1ba224fea480df3d296a1bf4e28613d4c97c704",
+    "terms_url": "https://huggingface.co/datasets/CHATS-Lab/MT-AgentRisk#terms-of-use",
+    "verified_on": "2026-09-27",
+    "normalized_terms_sha256": "cf6d8df4bf3fd6d48b6ca0dc9b2e3629eeb3b3183c0ca6b0204dee2cf9558694",
+    "local_terms": "data/mtar/LICENSE"
+  },
+  {
+    "dataset": "McGill-NLP/safearena",
+    "revision": "e712bbcaebb95484f63c2d2ab8e9d471066dc0c1",
+    "terms_url": "https://huggingface.co/datasets/McGill-NLP/safearena#terms-of-use",
+    "verified_on": "2026-09-27",
+    "normalized_terms_sha256": "cf6d8df4bf3fd6d48b6ca0dc9b2e3629eeb3b3183c0ca6b0204dee2cf9558694",
+    "local_terms": "licenses/SafeArena-TERMS.txt"
+  }
+]

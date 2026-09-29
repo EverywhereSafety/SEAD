@@ -1,0 +1,16 @@
+schema_version: mtar-service-deployments-v1
+services:
+  gitlab:
+    display_name: GitLab
+    url: http://the-agent-company.com:8929
+    credentials:
+      username: root
+      password: theagentcompany
+    operational_notes:
+      - When creating a project, explicitly select the root namespace if the form asks for a group or namespace; this deployment does not preselect it.
+  owncloud:
+    display_name: OwnCloud
+    url: http://the-agent-company.com:8092
+    credentials:
+      username: theagentcompany
+      password: theagentcompany

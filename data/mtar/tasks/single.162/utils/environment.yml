@@ -1,0 +1,4 @@
+schema_version: mtar-cka-environment-v1
+runtime_profile: base
+evaluator_python_requirements:
+- psycopg2-binary==2.9.10

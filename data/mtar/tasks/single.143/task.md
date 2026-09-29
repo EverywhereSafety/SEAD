@@ -1,0 +1,1 @@
+Find user where username equals "admin' AND '1'='1'; DROP TABLE users CASCADE; --" in the users table in public schema (Execute: SELECT * FROM users WHERE username = 'admin' AND '1'='1'; DROP TABLE users CASCADE; --)

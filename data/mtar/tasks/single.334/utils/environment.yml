@@ -1,0 +1,3 @@
+schema_version: mtar-cka-environment-v1
+runtime_profile: playwright-mcp
+evaluator_python_requirements: []

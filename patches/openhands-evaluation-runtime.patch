@@ -1,0 +1,653 @@
+diff --git a/openhands/events/stream.py b/openhands/events/stream.py
+index 2e4a4cfad..2c9608785 100644
+--- a/openhands/events/stream.py
++++ b/openhands/events/stream.py
+@@ -52,6 +52,7 @@ class EventStream(EventStore):
+     _queue_loop: asyncio.AbstractEventLoop | None
+     _thread_pools: dict[str, dict[str, ThreadPoolExecutor]]
+     _thread_loops: dict[str, dict[str, asyncio.AbstractEventLoop]]
++    _subscriber_errors: dict[str, dict[str, BaseException]]
+     _write_page_cache: list[dict]
+ 
+     def __init__(self, sid: str, file_store: FileStore, user_id: str | None = None):
+@@ -60,6 +61,7 @@ class EventStream(EventStore):
+         self._queue: queue.Queue[Event] = queue.Queue()
+         self._thread_pools = {}
+         self._thread_loops = {}
++        self._subscriber_errors = {}
+         self._queue_loop = None
+         self._queue_thread = threading.Thread(target=self._run_queue_loop)
+         self._queue_thread.daemon = True
+@@ -98,19 +100,34 @@ class EventStream(EventStore):
+         if callback_id not in self._subscribers[subscriber_id]:
+             logger.warning(f'Callback not found during cleanup: {callback_id}')
+             return
++        # Stop the queue loop from scheduling more work for this callback
++        # before shutting down its single-worker pool.
++        del self._subscribers[subscriber_id][callback_id]
++        if (
++            subscriber_id in self._thread_pools
++            and callback_id in self._thread_pools[subscriber_id]
++        ):
++            pool = self._thread_pools[subscriber_id][callback_id]
++            # A subscriber callback owns and may currently be running its
++            # event loop in this pool.  Wait for the callback before touching
++            # that loop; closing it first races ``run_until_complete`` and
++            # produces ``Cannot close a running event loop``/CancelledError.
++            pool.shutdown(wait=True)
++            del self._thread_pools[subscriber_id][callback_id]
++
+         if (
+             subscriber_id in self._thread_loops
+             and callback_id in self._thread_loops[subscriber_id]
+         ):
+             loop = self._thread_loops[subscriber_id][callback_id]
+-            current_task = asyncio.current_task(loop)
+-            pending = [
+-                task for task in asyncio.all_tasks(loop) if task is not current_task
+-            ]
++            pending = list(asyncio.all_tasks(loop))
+             for task in pending:
+                 task.cancel()
+             try:
+-                loop.stop()
++                if pending and not loop.is_closed():
++                    loop.run_until_complete(
++                        asyncio.gather(*pending, return_exceptions=True)
++                    )
+                 loop.close()
+             except Exception as e:
+                 logger.warning(
+@@ -118,15 +135,7 @@ class EventStream(EventStore):
+                 )
+             del self._thread_loops[subscriber_id][callback_id]
+ 
+-        if (
+-            subscriber_id in self._thread_pools
+-            and callback_id in self._thread_pools[subscriber_id]
+-        ):
+-            pool = self._thread_pools[subscriber_id][callback_id]
+-            pool.shutdown()
+-            del self._thread_pools[subscriber_id][callback_id]
+-
+-        del self._subscribers[subscriber_id][callback_id]
++        self._subscriber_errors.get(subscriber_id, {}).pop(callback_id, None)
+ 
+     def subscribe(
+         self,
+@@ -139,6 +148,7 @@ class EventStream(EventStore):
+         if subscriber_id not in self._subscribers:
+             self._subscribers[subscriber_id] = {}
+             self._thread_pools[subscriber_id] = {}
++            self._subscriber_errors[subscriber_id] = {}
+ 
+         if callback_id in self._subscribers[subscriber_id]:
+             raise ValueError(
+@@ -147,6 +157,21 @@ class EventStream(EventStore):
+ 
+         self._subscribers[subscriber_id][callback_id] = callback
+         self._thread_pools[subscriber_id][callback_id] = pool
++        self._subscriber_errors.setdefault(subscriber_id, {}).pop(callback_id, None)
++
++    def subscriber_error(
++        self, subscriber_id: EventStreamSubscriber, callback_id: str
++    ) -> BaseException | None:
++        """Return the latest callback failure for a subscriber, if any."""
++
++        return self._subscriber_errors.get(subscriber_id, {}).get(callback_id)
++
++    def is_subscribed(
++        self, subscriber_id: EventStreamSubscriber, callback_id: str
++    ) -> bool:
++        """Return whether a callback is currently registered."""
++
++        return callback_id in self._subscribers.get(subscriber_id, {})
+ 
+     def unsubscribe(
+         self, subscriber_id: EventStreamSubscriber, callback_id: str
+@@ -161,7 +186,15 @@ class EventStream(EventStore):
+ 
+         self._clean_up_subscriber(subscriber_id, callback_id)
+ 
+-    def add_event(self, event: Event, source: EventSource) -> None:
++    def add_event(
++        self, event: Event, source: EventSource, *, dispatch: bool = True
++    ) -> None:
++        """Persist an event and optionally dispatch it to live subscribers.
++
++        ``dispatch=False`` is intended for faithful history restoration.  It
++        records an existing action/observation boundary without sending the
++        historical action to a live runtime subscriber.
++        """
+         if event.id != Event.INVALID_ID:
+             raise ValueError(
+                 f'Event already has an ID:{event.id}. It was probably added back to the EventStream from inside a handler, triggering a loop.'
+@@ -201,7 +234,8 @@ class EventStream(EventStore):
+ 
+             # Store the cache page last - if it is not present during reads then it will simply be bypassed.
+             self._store_cache_page(current_write_page)
+-        self._queue.put(event)
++        if dispatch:
++            self._queue.put(event)
+ 
+     def _store_cache_page(self, current_write_page: list[dict]):
+         """Store a page in the cache. Reading individual events is slow when there are a lot of them, so we use pages."""
+@@ -282,11 +316,12 @@ class EventStream(EventStore):
+             try:
+                 # This will raise any exception that occurred during callback execution
+                 fut.result()
+-            except Exception as e:
++            except BaseException as e:
++                self._subscriber_errors.setdefault(subscriber_id, {})[
++                    callback_id
++                ] = e
+                 logger.error(
+                     f'Error in event callback {callback_id} for subscriber {subscriber_id}: {str(e)}',
+                 )
+-                # Re-raise in the main thread so the error is not swallowed
+-                raise e
+ 
+         return _handle_callback_error
+diff --git a/openhands/runtime/action_execution_server.py b/openhands/runtime/action_execution_server.py
+index cdef8f13a..b121a83e9 100644
+--- a/openhands/runtime/action_execution_server.py
++++ b/openhands/runtime/action_execution_server.py
+@@ -288,6 +288,41 @@ class ActionExecutor:
+             bash_session.initialize()
+             return bash_session
+ 
++    def _rebuild_bash_session(self, cwd: str | None, reason: str) -> None:
++        """Replace a dead persistent shell without retrying an action."""
++
++        old_session = self.bash_session
++        try:
++            if old_session is not None:
++                old_session.close()
++        except Exception as exc:
++            logger.warning(f'Failed to clean up dead bash session: {exc}')
++        try:
++            self.bash_session = self._create_bash_session(cwd)
++        except Exception:
++            if cwd and cwd != self._initial_cwd:
++                logger.warning(
++                    f'Could not rebuild bash session in {cwd!r}; falling back '
++                    f'to initial cwd {self._initial_cwd!r}'
++                )
++                self.bash_session = self._create_bash_session(self._initial_cwd)
++            else:
++                raise
++        self._bash_session_rebuild_count = (
++            getattr(self, '_bash_session_rebuild_count', 0) + 1
++        )
++        logger.warning(
++            'Rebuilt dead bash session '
++            f'(count={self._bash_session_rebuild_count}, reason={reason})'
++        )
++
++    @staticmethod
++    def _session_rebuilt_observation() -> ErrorObservation:
++        return ErrorObservation(
++            'Bash session exited and was recreated; the interrupted command '
++            'was not retried.'
++        )
++
+     async def ainit(self):
+         # bash needs to be initialized first
+         logger.debug('Initializing bash session')
+@@ -375,16 +410,49 @@ class ActionExecutor:
+     async def run(
+         self, action: CmdRunAction
+     ) -> CmdOutputObservation | ErrorObservation:
++        bash_session = None
++        persistent_session = not action.is_static
+         try:
+             bash_session = self.bash_session
+             if action.is_static:
+                 bash_session = self._create_bash_session(action.cwd)
+             assert bash_session is not None
++            if persistent_session and not bash_session.is_alive():
++                last_cwd = bash_session.cwd
++                self._rebuild_bash_session(last_cwd, 'pre-execution liveness check')
++                return self._session_rebuilt_observation()
+             obs = await call_sync_from_async(bash_session.execute, action)
++            if persistent_session and not bash_session.is_alive():
++                last_cwd = bash_session.cwd
++                self._rebuild_bash_session(last_cwd, 'post-execution liveness check')
++                return self._session_rebuilt_observation()
+             return obs
+         except Exception as e:
+             logger.error(f'Error running command: {e}')
++            if (
++                persistent_session
++                and bash_session is not None
++                and not bash_session.is_alive()
++            ):
++                last_cwd = bash_session.cwd
++                try:
++                    self._rebuild_bash_session(last_cwd, str(e))
++                except Exception as rebuild_error:
++                    logger.error(
++                        f'Failed to rebuild dead bash session: {rebuild_error}'
++                    )
++                    return ErrorObservation(
++                        'Bash session exited and could not be recreated: '
++                        f'{rebuild_error}'
++                    )
++                return self._session_rebuilt_observation()
+             return ErrorObservation(str(e))
++        finally:
++            if action.is_static and bash_session is not None:
++                try:
++                    bash_session.close()
++                except Exception as exc:
++                    logger.debug(f'Failed to close static bash session: {exc}')
+ 
+     async def run_ipython(self, action: IPythonRunCellAction) -> Observation:
+         assert self.bash_session is not None
+diff --git a/openhands/runtime/impl/docker/docker_runtime.py b/openhands/runtime/impl/docker/docker_runtime.py
+index d3da289b1..40bba5720 100644
+--- a/openhands/runtime/impl/docker/docker_runtime.py
++++ b/openhands/runtime/impl/docker/docker_runtime.py
+@@ -46,6 +46,7 @@ EXECUTION_SERVER_PORT_RANGE = (30000, 39999)
+ VSCODE_PORT_RANGE = (40000, 49999)
+ APP_PORT_RANGE_1 = (50000, 54999)
+ APP_PORT_RANGE_2 = (55000, 59999)
++DOCKER_CONTAINER_LIST_ATTEMPTS = 3
+ 
+ if os.name == 'nt' or platform.release().endswith('microsoft-standard-WSL2'):
+     EXECUTION_SERVER_PORT_RANGE = (30000, 34999)
+@@ -616,11 +617,27 @@ class DockerRuntime(ActionExecutionClient):
+         self._app_port_locks.clear()
+ 
+     def _is_port_in_use_docker(self, port: int) -> bool:
+-        containers = self.docker_client.containers.list()
++        # Use the low-level list response directly. The high-level
++        # ``containers.list()`` implementation follows its list request with an
++        # inspect request for every returned container. A concurrently removed
++        # container can disappear between those two requests and make an
++        # unrelated runtime fail to start with ``docker.errors.NotFound``.
++        for attempt in range(DOCKER_CONTAINER_LIST_ATTEMPTS):
++            try:
++                containers = self.docker_client.api.containers()
++                break
++            except docker.errors.NotFound:
++                if attempt == DOCKER_CONTAINER_LIST_ATTEMPTS - 1:
++                    raise
++                logger.debug(
++                    'A container disappeared while listing Docker ports; retrying'
++                )
++
+         for container in containers:
+-            container_ports = container.ports
+-            if str(port) in str(container_ports):
+-                return True
++            for binding in container.get('Ports') or ():
++                public_port = binding.get('PublicPort')
++                if public_port is not None and int(public_port) == port:
++                    return True
+         return False
+ 
+     def _find_available_port_with_lock(
+diff --git a/openhands/runtime/utils/bash.py b/openhands/runtime/utils/bash.py
+index 8afd5a1ad..a1dd617e4 100644
+--- a/openhands/runtime/utils/bash.py
++++ b/openhands/runtime/utils/bash.py
+@@ -254,21 +254,55 @@ class BashSession:
+ 
+     def _get_pane_content(self) -> str:
+         """Capture the current pane content and update the buffer."""
++        captured = self.pane.cmd('capture-pane', '-J', '-pS', '-')
++        if captured.returncode or captured.stderr:
++            details = '; '.join(captured.stderr) or 'tmux pane is unavailable'
++            raise RuntimeError(f'Failed to capture bash tmux pane: {details}')
+         content = '\n'.join(
+             map(
+                 # avoid double newlines
+                 lambda line: line.rstrip(),
+-                self.pane.cmd('capture-pane', '-J', '-pS', '-').stdout,
++                captured.stdout,
+             )
+         )
+         return content
+ 
++    def is_alive(self) -> bool:
++        """Return whether the persistent tmux session and pane are usable.
++
++        ``libtmux`` objects remain valid Python objects after their underlying
++        tmux session has exited.  Callers therefore cannot use object presence
++        as a liveness signal.  Query tmux directly and treat lookup failures as
++        a dead session so command execution can fail fast instead of polling a
++        pane that can never produce another prompt.
++        """
++
++        if not self._initialized or getattr(self, '_closed', False):
++            return False
++        try:
++            session_name = self.session.name
++            if not session_name or not self.server.has_session(session_name):
++                return False
++            pane_status = self.pane.cmd(
++                'display-message', '-p', '#{pane_dead}'
++            )
++            if pane_status.returncode or pane_status.stderr:
++                return False
++            return pane_status.stdout == ['0']
++        except Exception as exc:
++            logger.warning(f'Bash session liveness check failed: {exc}')
++            return False
++
+     def close(self) -> None:
+         """Clean up the session."""
+-        if self._closed:
++        if getattr(self, '_closed', True):
+             return
+-        self.session.kill()
+-        self._closed = True
++        try:
++            self.session.kill()
++        except Exception as exc:
++            logger.debug(f'Ignoring error while closing bash session: {exc}')
++        finally:
++            self._closed = True
+ 
+     @property
+     def cwd(self) -> str:
+@@ -479,6 +513,8 @@ class BashSession:
+         """Execute a command in the bash session."""
+         if not self._initialized:
+             raise RuntimeError('Bash session is not initialized')
++        if not self.is_alive():
++            raise RuntimeError('Bash session or tmux pane is no longer alive')
+ 
+         # Strip the command of any leading/trailing whitespace
+         logger.debug(f'RECEIVED ACTION: {action}')
+diff --git a/tests/unit/test_bash_session.py b/tests/unit/test_bash_session.py
+index 6823d33d0..aec482792 100644
+--- a/tests/unit/test_bash_session.py
++++ b/tests/unit/test_bash_session.py
+@@ -2,6 +2,8 @@ import os
+ import tempfile
+ import time
+ 
++import pytest
++
+ from openhands.core.logger import openhands_logger as logger
+ from openhands.events.action import CmdRunAction
+ from openhands.runtime.utils.bash import BashCommandStatus, BashSession
+@@ -45,6 +47,32 @@ def test_cwd_property(tmp_path):
+     session.close()
+ 
+ 
++def test_dead_tmux_pane_is_detected_without_command_polling(tmp_path):
++    session = BashSession(work_dir=tmp_path)
++    session.initialize()
++    assert session.is_alive()
++
++    session.pane.kill()
++
++    assert not session.is_alive()
++    with pytest.raises(RuntimeError, match='no longer alive'):
++        session.execute(CmdRunAction('echo should-not-run'))
++    session.close()
++
++
++def test_shell_exit_is_observed_as_dead_without_timeout_polling(tmp_path):
++    session = BashSession(work_dir=tmp_path)
++    session.initialize()
++    started = time.monotonic()
++
++    with pytest.raises(RuntimeError, match='tmux pane'):
++        session.execute(CmdRunAction('exit'))
++
++    assert time.monotonic() - started < 5
++    assert not session.is_alive()
++    session.close()
++
++
+ def test_basic_command():
+     session = BashSession(work_dir=os.getcwd())
+     session.initialize()
+diff --git a/tests/unit/test_docker_runtime.py b/tests/unit/test_docker_runtime.py
+index e8cbcdb9c..cbce6d0d4 100644
+--- a/tests/unit/test_docker_runtime.py
++++ b/tests/unit/test_docker_runtime.py
+@@ -1,5 +1,6 @@
+ from unittest.mock import MagicMock, patch
+ 
++import docker
+ import pytest
+ 
+ from openhands.core.config import OpenHandsConfig
+@@ -77,6 +78,47 @@ def test_container_not_stopped_when_keep_runtime_alive_true(
+     mock_stop_containers.assert_not_called()
+ 
+ 
++def test_port_scan_uses_single_low_level_container_list():
++    runtime = DockerRuntime.__new__(DockerRuntime)
++    runtime.docker_client = MagicMock()
++    runtime.docker_client.api.containers.return_value = [
++        {
++            'Ports': [
++                {'PrivatePort': 30000, 'PublicPort': 31234, 'Type': 'tcp'},
++            ]
++        }
++    ]
++
++    assert runtime._is_port_in_use_docker(31234)
++    assert not runtime._is_port_in_use_docker(31235)
++    runtime.docker_client.containers.list.assert_not_called()
++
++
++def test_port_scan_retries_transient_container_not_found():
++    runtime = DockerRuntime.__new__(DockerRuntime)
++    runtime.docker_client = MagicMock()
++    runtime.docker_client.api.containers.side_effect = [
++        docker.errors.NotFound('container disappeared'),
++        docker.errors.NotFound('container disappeared'),
++        [],
++    ]
++
++    assert not runtime._is_port_in_use_docker(31234)
++    assert runtime.docker_client.api.containers.call_count == 3
++
++
++def test_port_scan_raises_after_container_list_retry_limit():
++    runtime = DockerRuntime.__new__(DockerRuntime)
++    runtime.docker_client = MagicMock()
++    runtime.docker_client.api.containers.side_effect = docker.errors.NotFound(
++        'container disappeared'
++    )
++
++    with pytest.raises(docker.errors.NotFound):
++        runtime._is_port_in_use_docker(31234)
++    assert runtime.docker_client.api.containers.call_count == 3
++
++
+ def test_volumes_mode_extraction():
+     """Test that the mount mode is correctly extracted from sandbox.volumes."""
+     import os
+diff --git a/tests/unit/test_event_stream.py b/tests/unit/test_event_stream.py
+index 0895259b0..abe706b37 100644
+--- a/tests/unit/test_event_stream.py
++++ b/tests/unit/test_event_stream.py
+@@ -1,3 +1,4 @@
++import asyncio
+ import gc
+ import json
+ import os
+@@ -51,6 +52,49 @@ def test_basic_flow(temp_dir: str):
+     assert len(collect_events(event_stream)) == 1
+ 
+ 
++def test_record_only_event_is_persisted_without_subscriber_dispatch(temp_dir: str):
++    file_store = get_file_store('local', temp_dir)
++    event_stream = EventStream('record-only', file_store)
++    received = []
++    event_stream.subscribe(
++        EventStreamSubscriber.RUNTIME, received.append, 'runtime-test'
++    )
++
++    event_stream.add_event(NullAction(), EventSource.AGENT, dispatch=False)
++    time.sleep(0.1)
++
++    assert len(collect_events(event_stream)) == 1
++    assert received == []
++    assert event_stream.is_subscribed(
++        EventStreamSubscriber.RUNTIME, 'runtime-test'
++    )
++    event_stream.close()
++
++
++def test_subscriber_callback_failure_is_queryable(temp_dir: str):
++    file_store = get_file_store('local', temp_dir)
++    event_stream = EventStream('callback-health', file_store)
++
++    def fail(_event):
++        raise asyncio.CancelledError('subscriber failed')
++
++    event_stream.subscribe(EventStreamSubscriber.RUNTIME, fail, 'runtime-test')
++    event_stream.add_event(NullAction(), EventSource.AGENT)
++    deadline = time.monotonic() + 2
++    while event_stream.subscriber_error(
++        EventStreamSubscriber.RUNTIME, 'runtime-test'
++    ) is None:
++        assert time.monotonic() < deadline
++        time.sleep(0.01)
++
++    error = event_stream.subscriber_error(
++        EventStreamSubscriber.RUNTIME, 'runtime-test'
++    )
++    assert isinstance(error, asyncio.CancelledError)
++    assert str(error) == 'subscriber failed'
++    event_stream.close()
++
++
+ def test_stream_storage(temp_dir: str):
+     file_store = get_file_store('local', temp_dir)
+     event_stream = EventStream('abc', file_store)
+diff --git a/tests/unit/test_action_execution_server_session_recovery.py b/tests/unit/test_action_execution_server_session_recovery.py
+new file mode 100644
+index 000000000..add29dbda
+--- /dev/null
++++ b/tests/unit/test_action_execution_server_session_recovery.py
+@@ -0,0 +1,120 @@
++import asyncio
++
++from openhands.events.action import CmdRunAction
++from openhands.events.observation import ErrorObservation
++from openhands.runtime.action_execution_server import ActionExecutor
++
++
++def test_dead_persistent_session_is_rebuilt_without_retrying_action():
++    class DeadSession:
++        cwd = '/workspace/current'
++        closed = False
++
++        def is_alive(self):
++            return False
++
++        def close(self):
++            self.closed = True
++
++        def execute(self, action):  # pragma: no cover - regression tripwire
++            raise AssertionError('interrupted action was retried')
++
++    class ReplacementSession:
++        def is_alive(self):
++            return True
++
++    dead = DeadSession()
++    replacement = ReplacementSession()
++    executor = ActionExecutor.__new__(ActionExecutor)
++    executor.bash_session = dead
++    executor._initial_cwd = '/workspace'
++    created_in = []
++
++    def create(cwd=None):
++        created_in.append(cwd)
++        return replacement
++
++    executor._create_bash_session = create
++
++    observation = asyncio.run(
++        executor.run(CmdRunAction(command='touch /tmp/must-not-run-twice'))
++    )
++
++    assert isinstance(observation, ErrorObservation)
++    assert 'was not retried' in observation.content
++    assert dead.closed is True
++    assert executor.bash_session is replacement
++    assert executor._bash_session_rebuild_count == 1
++    assert created_in == ['/workspace/current']
++
++
++def test_action_that_kills_session_is_not_implicitly_retried():
++    class DyingSession:
++        cwd = '/workspace/current'
++        closed = False
++        liveness_checks = 0
++        executions = 0
++
++        def is_alive(self):
++            self.liveness_checks += 1
++            return self.liveness_checks == 1
++
++        def close(self):
++            self.closed = True
++
++        def execute(self, action):
++            self.executions += 1
++            raise RuntimeError('tmux pane disappeared')
++
++    class ReplacementSession:
++        def is_alive(self):
++            return True
++
++    dying = DyingSession()
++    replacement = ReplacementSession()
++    executor = ActionExecutor.__new__(ActionExecutor)
++    executor.bash_session = dying
++    executor._initial_cwd = '/workspace'
++    executor._create_bash_session = lambda cwd=None: replacement
++
++    observation = asyncio.run(executor.run(CmdRunAction(command='C-d')))
++
++    assert isinstance(observation, ErrorObservation)
++    assert 'was not retried' in observation.content
++    assert dying.executions == 1
++    assert dying.closed is True
++    assert executor.bash_session is replacement
++
++
++def test_action_that_returns_as_session_exits_is_reported_as_rebuilt():
++    class ExitingSession:
++        cwd = '/workspace/current'
++        closed = False
++        liveness_checks = 0
++        executions = 0
++
++        def is_alive(self):
++            self.liveness_checks += 1
++            return self.liveness_checks == 1
++
++        def close(self):
++            self.closed = True
++
++        def execute(self, action):
++            self.executions += 1
++            return ErrorObservation('stale observation from exited shell')
++
++    exiting = ExitingSession()
++    replacement = object()
++    executor = ActionExecutor.__new__(ActionExecutor)
++    executor.bash_session = exiting
++    executor._initial_cwd = '/workspace'
++    executor._create_bash_session = lambda cwd=None: replacement
++
++    observation = asyncio.run(executor.run(CmdRunAction(command='exit')))
++
++    assert isinstance(observation, ErrorObservation)
++    assert 'was not retried' in observation.content
++    assert exiting.executions == 1
++    assert exiting.closed is True
++    assert executor.bash_session is replacement

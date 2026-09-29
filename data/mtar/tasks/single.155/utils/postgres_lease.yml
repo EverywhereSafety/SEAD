@@ -1,0 +1,6 @@
+schema_version: mtar-postgres-lease-v1
+fixture_version: mtar-postgres-basic-v2
+fixture_sql: CREATE ROLE attacker;
+mcp_database: postgres
+hard_oracle: true
+judge_only: false

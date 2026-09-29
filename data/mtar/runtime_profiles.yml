@@ -1,0 +1,86 @@
+schema_version: mtar-runtime-profile-registry-v1
+evaluator_wheelhouse: /opt/sead/wheelhouse
+evaluator_wheelhouse_available: false
+evaluator_wheelhouse_unavailable_reason: build and verify the evaluator wheelhouse locally; see containers/mtar/README.md
+services:
+  filesystem-mcp:
+    available: false
+    unavailable_reason: build containers/mtar/filesystem-mcp and configure the local image ID; see containers/mtar/README.md
+    image: null
+  gitlab:
+    available: true
+    unavailable_reason: null
+    image: ghcr.io/theagentcompany/servers-gitlab@sha256:6c61011c225953f3c081eb44e5ba80068489f31289aeb31ccf621c3df024142e
+  owncloud:
+    available: true
+    unavailable_reason: null
+    image: ghcr.io/theagentcompany/servers-owncloud@sha256:326406d88345899db22fc1081aa8fa15415c542a71b80486c0a2cebf59f56f63
+  playwright-mcp:
+    available: false
+    unavailable_reason: build containers/mtar/playwright-mcp and configure the local image ID; see containers/mtar/README.md
+    image: null
+  reddit:
+    available: false
+    unavailable_reason: Reddit service image and build sources are not bundled; provide a compatible deployment
+    image: null
+profiles:
+  oas-base:
+    backend: docker
+    available: true
+    unavailable_reason: null
+    image: ghcr.io/sani903/openagentsafety_base_image-image@sha256:33c19d470c401128e853f39b27e89801ca4fa67de7f1b3d3588c1a1a95f11bdb
+    template: null
+    network: isolated
+    cap_add: []
+    pid_namespace: isolated
+    seccomp_profile: default
+  oas-web:
+    backend: docker
+    available: true
+    unavailable_reason: null
+    image: ghcr.io/sani903/openagentsafety_base_image-image@sha256:33c19d470c401128e853f39b27e89801ca4fa67de7f1b3d3588c1a1a95f11bdb
+    template: null
+    network: host
+    cap_add: []
+    pid_namespace: isolated
+    seccomp_profile: default
+  base:
+    backend: docker
+    available: false
+    unavailable_reason: build containers/mtar/base and configure the local image ID; see containers/mtar/README.md
+    image: null
+    template: null
+    network: host
+    cap_add: []
+    pid_namespace: isolated
+    seccomp_profile: default
+  playwright-mcp:
+    backend: docker
+    available: false
+    unavailable_reason: build containers/mtar/base and configure the local image ID; see containers/mtar/README.md
+    image: null
+    template: null
+    network: host
+    cap_add: []
+    pid_namespace: isolated
+    seccomp_profile: default
+  ptrace-sshd:
+    backend: docker
+    available: false
+    unavailable_reason: build containers/mtar/ptrace-sshd and configure the local image ID; see containers/mtar/README.md
+    image: null
+    template: null
+    network: isolated
+    cap_add: [SYS_PTRACE]
+    pid_namespace: isolated
+    seccomp_profile: ptrace-sshd
+  net-admin:
+    backend: docker
+    available: false
+    unavailable_reason: build containers/mtar/net-admin and configure the local image ID; see containers/mtar/README.md
+    image: null
+    template: null
+    network: isolated
+    cap_add: [NET_ADMIN]
+    pid_namespace: isolated
+    seccomp_profile: default

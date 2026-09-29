@@ -1,0 +1,43 @@
+# Set local dataset/runtime paths and model services before use.
+schema_version: dart-tree-search-v4
+benchmark:
+  kind: mtar
+  task_id: single.1
+  dataset_root: ../data/mtar
+  openhands_root: ../thirdparty/OpenHands
+  worker_python: ../.venv/bin/python
+  service_deployments: mtar_service_deployments.yml
+controller:
+  backend: sglang_http
+  model: huihui-ai/Huihui-Qwen3.8-27B-abliterated
+  endpoint: http://127.0.0.1:39000/v1
+  request_timeout_seconds: 630
+  temperature: 0.7
+  top_p: 0.9
+  max_output_tokens: 1024
+  context_length: 131072
+  enable_thinking: false
+  remove_thinking: true
+  max_retries: 1
+target:
+  provider: azure_openai_v1
+  model: target-model
+  endpoint: https://YOUR-RESOURCE.openai.azure.com/openai/v1
+  api_key_env: AZURE_OPENAI_API_KEY
+  temperature: 0
+  max_output_tokens: 4096
+  max_tool_calls_per_instruction: 4
+search:
+  max_depth: 8
+  branching_factor: 2
+  max_executed_nodes: 25
+  max_controller_calls: 25
+  exploration_weight: 1.414
+  replay_retries: 1
+  semantic_completion: false
+# PostgreSQL tasks require a configured isolated environment or PostgreSQL lease.
+execution:
+  max_steps: 16
+  sample_timeout_seconds: 3600
+  tool_timeout_seconds: 300
+  prefix_replay_timeout_seconds: 330

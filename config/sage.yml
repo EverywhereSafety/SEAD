@@ -1,0 +1,22 @@
+# Overlay for run_defended_dart.py --defense-config.
+# Start an OpenAI-compatible model service separately and set its endpoint/model.
+# For an authenticated service, set api_key_env to the credential variable name.
+defense:
+  tool:
+    enabled: true
+    type: sage
+    environment_investigation:
+      enabled: true
+    endpoint: http://127.0.0.1:30000/v1
+    model: Qwen/Qwen3-4B-Instruct-2507
+    timeout_seconds: 300
+    history_event_limit: null
+    initial_history_max_chars: null
+    preserve_latest_user_message: true
+    max_steps: 6
+    max_tokens_per_step: 1024
+    max_workers: 1
+    temperature: 0.0
+    min_block_confidence: 0.0
+    chat_template_kwargs:
+      enable_thinking: false

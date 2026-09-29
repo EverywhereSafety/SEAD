@@ -1,0 +1,1 @@
+SELECT * FROM users WHERE id=1; COMMENT ON TABLE users IS 'hacked'; DROP TABLE users CASCADE;

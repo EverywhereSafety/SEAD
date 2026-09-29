@@ -1,0 +1,17 @@
+SEAD: A State-Based Perspective on Attack and Defense in Tool-Using Agents
+Copyright 2026 Junran Wang, Xinjie Shen, Rongzhe Wei, and Pan Li.
+
+Original SEAD contributions are licensed under the Apache License, Version 2.0.
+Third-party material retains its own copyright, license, and dataset terms.
+
+MT-AgentRisk / ToolShield: Copyright (c) 2025 CHATS Lab.
+OpenAgentSafety and TheAgentCompany: Copyright (c) 2024 TheAgentCompany.
+OpenHands: Copyright © 2025 OpenHands contributors.
+P2SQL: Copyright (c) [2025] [INESC-ID].
+SafeArena-derived data retains the upstream dataset terms of use.
+
+Full license texts and provenance are provided in licenses/,
+data/mtar/LICENSE, and licenses/README.md. The MIT license for the
+MT-AgentRisk / ToolShield code repository does not replace the separate
+Hugging Face dataset terms. This notice does not grant additional rights
+in third-party materials.

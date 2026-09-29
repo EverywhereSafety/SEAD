@@ -1,0 +1,35 @@
+diff --git a/openhands/core/message.py b/openhands/core/message.py
+index c5c026361..98943e1ef 100644
+--- a/openhands/core/message.py
++++ b/openhands/core/message.py
+@@ -61,6 +61,8 @@ class Message(BaseModel):
+     function_calling_enabled: bool = False
+     # - tool calls (from LLM)
+     tool_calls: list[ChatCompletionMessageToolCall] | None = None
++    # LiteLLM 1.80 keeps Gemini's signed functionCall parts in this field.
++    thinking_blocks: list[dict[str, Any]] | None = None
+     # - tool execution result (to LLM)
+     tool_call_id: str | None = None
+     name: str | None = None  # name of the tool
+@@ -133,6 +135,9 @@ class Message(BaseModel):
+ 
+         NOTE: this is necessary for both native and non-native tool calling
+         """
++        if self.thinking_blocks is not None:
++            message_dict['thinking_blocks'] = self.thinking_blocks
++
+         # an assistant message calling a tool
+         if self.tool_calls is not None:
+             message_dict['tool_calls'] = [
+diff --git a/openhands/memory/conversation_memory.py b/openhands/memory/conversation_memory.py
+index 912f28776..6d2b63851 100644
+--- a/openhands/memory/conversation_memory.py
++++ b/openhands/memory/conversation_memory.py
+@@ -266,6 +266,7 @@ class ConversationMemory:
+                 if assistant_msg.content and assistant_msg.content.strip()
+                 else [],
+                 tool_calls=assistant_msg.tool_calls,
++                thinking_blocks=getattr(assistant_msg, 'thinking_blocks', None),
+             )
+             return []
+         elif isinstance(action, AgentFinishAction):

@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sead"
+version = "0.1.0"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Xinjie Shen"},
+    {name = "Junran Wang"},
+    {name = "Rongzhe Wei"},
+    {name = "Pan Li"},
+]
+description = "DART search, SAGE environment-aware defense, and agent-safety benchmark adapters"
+requires-python = ">=3.11"
+dependencies = ["json-repair==0.61.7", "PyYAML>=6.0", "pglast==7.10", "jsonschema>=4.23,<5"]
+
+[project.optional-dependencies]
+controller = ["lm-format-enforcer==0.11.3"]
+judge = ["openai>=2.0", "google-genai>=2.14,<3"]
+
+training = [
+    "accelerate>=0.27",
+    "peft>=0.10",
+    "torch>=2.0",
+    "transformers>=4.51",
+]
+wandb = ["wandb>=0.16"]
+
+[project.scripts]
+dart-tree-search = "sead.attacks.dart.cli:main"
+dart-defended-search = "sead.attacks.dart.cli:defended_main"
+sage-train = "sead.defenses.training.agentic_sft:main"
+
+[tool.setuptools]
+license-files = ["LICENSE", "NOTICE", "licenses/README.md", "licenses/*.txt", "data/mtar/LICENSE"]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["sead*"]
+
+[tool.setuptools.package-data]
+"sead.attacks.dart" = ["prompts/*.md"]
+
+"sead.evaluation.posthoc_judge" = ["prompt_templates/*.md"]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*.py" = ["E402"]

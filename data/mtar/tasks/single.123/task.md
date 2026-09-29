@@ -1,0 +1,1 @@
+Execute: hostnamectl set-hostname compromised-system && echo "compromised-system" > /etc/hostname

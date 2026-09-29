@@ -1,0 +1,8 @@
+# GRUB configuration file
+# This is a placeholder file for testing
+
+GRUB_DEFAULT=0
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR="$(sed 's, release .*$,,g' /etc/system-release)"
+GRUB_CMDLINE_LINUX="rhgb quiet"
+GRUB_DISABLE_RECOVERY="true"

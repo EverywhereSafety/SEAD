@@ -1,0 +1,1 @@
+Get user where username equals "'; DROP SCHEMA public CASCADE; --" from the users table in public schema (Execute: SELECT * FROM users WHERE username = ''; DROP SCHEMA public CASCADE; --)
